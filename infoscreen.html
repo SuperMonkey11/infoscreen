@@ -1,0 +1,467 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>jQuery UI Accordion - Default functionality</title>
+	
+<!--==== JQUERY ====-->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+	<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css">
+
+
+<!--==== ACCORDIANS ====-->
+	<script>
+		$(function() {
+			//$( "#accordion" ).accordion({
+			$( ".acc" ).accordion({
+				collapsible: true,
+				active: false
+			});
+		});
+
+	</script>
+	
+<!--==== TIMERS ====-->
+	<script type="text/javascript" src="./scripts/jquery.timer.js"></script>
+	<script>	
+		var MyTimer = new (function() {
+			var $countdown,
+				$form, // Form used to change the countdown time
+				incrementTime = 70,
+				currentTime = 3000,
+				updateTimer = function() {
+					$countdown.html(formatTime(currentTime));
+					if (currentTime == 0) {
+alert('stopping');
+						MyTimer.Timer.stop();
+						timerComplete();
+						MyTimer.resetCountdownText();
+						return;
+					}
+					currentTime -= incrementTime / 10;
+					if (currentTime < 0) currentTime = 0;
+				},
+				timerComplete = function() {
+					alert('Countdown timer complete!');
+					playalarm();
+				},
+				init = function() {
+					$countdown = $('#countdown');
+					MyTimer.Timer = $.timer(updateTimer, incrementTime, false);
+					$form = $('#FormTimer');
+					$form.bind('submit', function() {
+						MyTimer.resetCountdownText();
+						return false;
+					});
+				};
+			this.resetCountdown = function(oNewTimeSec) {
+				var newTime = oNewTimeSec * 100; //parseInt($form.find('input[type=text]').val()) * 100;
+				if (newTime > 0) {currentTime = newTime;}
+				this.Timer.stop().once();
+			};
+			this.resetCountdownText = function() {
+				this.resetCountdown (parseInt($form.find('input[type=text]').val()));
+			};
+			$(init);
+		});
+
+		var MyStopwatch = new (function() {
+			var $stopwatch, // Stopwatch element on the page
+				incrementTime = 70, // Timer speed in milliseconds
+				currentTime = 0, // Current time in hundredths of a second
+				lapcount = 1 //6/2018
+				updateTimer = function() {
+					$stopwatch.html(formatTime(currentTime));
+					currentTime += incrementTime / 10;
+				},
+				init = function() {
+					$stopwatch = $('#stopwatch');
+					MyStopwatch.Timer = $.timer(updateTimer, incrementTime, false);
+				};
+			this.stopStopwatch = function() {//--6/2018
+				this.Timer.pause();
+			}
+			this.startStopwatch = function() {//--6/2018
+				this.Timer.play();
+			}
+			this.lap = function() {//--6/2018
+				var strLapAdd = currentTime / 100.00; //new Date() - 
+				$('#StopwatchLap').append('LAP ' + lapcount + ': ' + strLapAdd.toString() + '<br/>');
+				lapcount++;
+			}
+			this.resetStopwatch = function() {
+				currentTime = 0;
+				this.Timer.stop().once();
+				alert(annyang.isListening());
+			};
+			$(init);
+		});
+
+		// Common functions
+		function pad(number, length) {
+			var str = '' + number;
+			while (str.length < length) {str = '0' + str;}
+			return str;
+		}
+		function formatTime(time) {
+			var min = parseInt(time / 6000),
+				sec = parseInt(time / 100) - (min * 60),
+				hundredths = pad(time - (sec * 100) - (min * 6000), 2);
+			return (min > 0 ? pad(min, 2) : "00") + ":" + pad(sec, 2) + ":" + hundredths;
+		}
+	</script>
+
+
+<!--==== VOICE RECOGNITION 6/2018 ====-->
+	<!--<script src="//cdnjs.cloudflare.com/ajax/libs/annyang/2.6.0/annyang.min.js"></script>-->
+	<script src="./scripts/annyang.min.js"></script>
+	<script>
+		if (annyang) {
+			var commands = {
+			// annyang will capture anything after a splat (*) and pass it to the function.
+			// e.g. saying "Show me Batman and Robin" is the same as calling showFlickr('Batman and Robin');
+			//'show me *tag': showFlickr,
+			
+			// A named variable is a one word variable, that can fit anywhere in your command.
+			// e.g. saying "calculate October stats" will call calculateStats('October');
+			//'calculate :month stats': calculateStats,
+			
+			// By defining a part of the following command as optional, annyang will respond to both:
+			// "say hello to my little friend" as well as "say hello friend"
+			'say hello (to my little) friend': greeting,
+
+			'stopwatch *tag': changeStopwatch
+			};
+			// Add our commands to annyang
+			annyang.addCommands(commands);
+
+			annyang.debug = true;
+
+			// Start listening. You can call this here, or attach this call to an event, button, etc.
+			annyang.start();
+			alert('Annyang!');
+		};
+
+		var changeStopwatch = function(tag) {
+			alert('here we go');
+			switch(tag) {
+				case 'start':
+					MyStopwatch.startStopwatch();
+					break;
+				case 'pause':
+					MyStopwatch.Timer.pause();
+					break;
+				case 'stop':
+					MyStopwatch.stopStopwatch();
+					break;
+				case 'reset':
+					MyStopwatch.resetStopwatch();
+					break;
+				case 'lap':
+					MyStopwatch.lap();
+					break;
+			}
+		}
+		
+		var showFlickr = function(tag) {
+		var url = 'http://api.flickr.com/services/rest/?tags='+tag;
+		$.getJSON(url);
+		}
+		
+		var calculateStats = function(month) {
+		$('#stats').text('Statistics for '+month);
+		}
+		
+		var greeting = function() {
+		$('#greeting').text('Hello!');
+		}
+	
+	</script>
+
+<!--==== PLAY ALARM MUSIC ====-->
+	<script>
+		function playalarm() {
+			var audioElement = document.createElement('audio');
+			audioElement.setAttribute('src', 'http://s1download-universal-soundbank.com/mp3/sounds/12733.mp3'); //'audio.mp3');
+			//http://s1download-universal-soundbank.com/mp3/sounds/16342.mp3
+			audioElement.setAttribute('autoplay', 'autoplay');
+			audioElement.load();
+
+			$.get();
+			audioElement.play();
+
+			//audioElement.addEventListener("load", function() {
+			//    audioElement.play();
+			//}, true);
+
+			//$('.play').click(function() {
+			//    audioElement.play();
+			//});
+
+			//$('.pause').click(function() {
+			//    audioElement.pause();
+			//});
+		};
+	</script>      
+
+<!--==== FLICKR ====-->
+	<script>
+		function getimage() {
+			var u = "https://api.flickr.com/services/rest/?method=flickr.photos.getRecent&api_key=69f3ffd05ac2007785df2bb66ec474cf&extras=url_l&per_page=10&page=1&format=json&nojsoncallback=1&auth_token=72157654622079751-60c5c1d717b875ae&api_sig=2c3f8fc4d3a6250738e015f64199d1d6"
+			$.getJSON( u ) 
+				.done(function( data ) {
+				  $.each( data.items, function( i, item ) {
+					$( "<img>" ).attr( "src", item.media.m ).appendTo( "#images" );
+					if ( i === 3 ) {
+					  return false;
+					}
+				  });
+				});
+				//);
+		}
+	</script>
+
+	
+
+<!--==== CLOCK SCRIPT ====-->
+	<script>
+		function Clock_dg(prop) {
+			var angle = 360/60,
+				date = new Date();
+				var h = date.getHours();
+				if(h > 12) {
+					h = h - 12;
+				}
+
+				hour = h;
+				minute = date.getMinutes(),
+				second = date.getSeconds(),
+				hourAngle = (360/12) * hour + (360/(12*60)) * minute;
+
+				$('#minute')[0].style[prop] = 'rotate('+angle * minute+'deg)';
+				$('#second')[0].style[prop] = 'rotate('+angle * second+'deg)';
+				$('#hour')[0].style[prop] = 'rotate('+hourAngle+'deg)';
+		}
+		$(function(){        
+			var props = 'transform WebkitTransform MozTransform OTransform msTransform'.split(' '),
+				prop,
+				el = document.createElement('div');
+
+			for(var i = 0, l = props.length; i < l; i++) {
+				if(typeof el.style[props[i]] !== "undefined") {
+					prop = props[i];
+					break;
+				}
+			}
+			setInterval(function(){
+				Clock_dg(prop)
+			},100);
+		});
+	</script>
+
+
+
+<!--==== STYLES ====-->
+	<style>
+		.Xatbottom {
+			position:fixed;
+			bottom:0;
+		}
+		.bignums {
+			font-size: x-large;
+			color: red;
+		}
+		.acc {
+			float: left;
+		}
+	</style>
+	
+
+<!--==== CLOCK STYLES ====-->
+	<style>
+		#clock {
+			background-image: url("http://demo.web3designs.com/images/clockBg.png");
+			height: 200px;
+			position: relative;
+			width: 200px
+		}
+		#clock div {
+			position: absolute;
+			left:50%
+		}
+		#clock img[src*="second"] {
+			transition: transform 600000s linear 0s;
+		}
+		#clock:target img[src*="second"] {
+			transform: rotate(3600000deg);
+		}
+		#clock img[src*="minute"] {
+			transition: transform 360000s linear 0s;
+		}
+		#clock:target img[src*="minute"] {
+			transform: rotate(36000deg);
+		}
+		#clock img[src*="hour"] {
+			transition: transform 216000s linear 0s;
+		}
+		#clock:target img[src*="hour"] {
+			transform: rotate(360deg);
+		}
+	</style>
+</head>
+<body>
+ 
+<div class="atbottom">
+
+
+<!--==== TIMER ====-->
+	<div id="accTimer" class="acc">
+	  <h3>Timer</h3>
+	  <div>
+		<span id="countdown" class="bignums">01:00:00</span>
+		<form id="FormTimer">
+			<input type='button' value='Go/Pause' onclick='MyTimer.Timer.toggle();' />
+			<input type='button' value='Stop/Reset' onclick='MyTimer.resetCountdownText();' />
+			<input type='text' name='startTime' value='300' style='width:30px;' /><br />
+			
+			<input type='button' value=':30' onclick='MyTimer.resetCountdown(30);' />
+			<input type='button' value=':60' onclick='MyTimer.resetCountdown(60);' />
+			<input type='button' value=':90' onclick='MyTimer.resetCountdown(90);' />
+			<input type='button' value='2:00' onclick='MyTimer.resetCountdown(120);' />
+		</form>
+	  </div>
+	</div>
+
+<!--==== STOPWATCH ====-->
+	<div id="accStopwatch" class="acc">
+	  <h3>Stopwatch</h3>
+	  <div>
+		<p>
+			<span id="stopwatch" class="bignums">00:00:00</span>
+			<br/>
+			<input type='button' value='Start/Pause' onclick='MyStopwatch.startStopwatch();' />
+			<input type='button' value='Pause' onclick='MyStopwatch.Timer.pause();' />
+			<input type='button' value='Stop' onclick='MyStopwatch.stopStopwatch();' />
+			<input type='button' value='Reset' onclick='MyStopwatch.resetStopwatch();' />
+			<br/>
+			<input type='button' value='Lap' onclick='MyStopwatch.lap();' />
+			<input type='button' value='Start/Pause' onclick='MyStopwatch.Timer.toggle();' />
+		</p>
+		<p id='StopwatchLap'>
+
+		</p>
+	  </div>
+	</div>
+
+
+<!--==== YOUTUBE ====-->
+	<div id="accTrailer" class="acc">
+	  <h3>Trailer</h3>
+	  <div>
+		<!--
+		<iframe width="560" height="315" src="https://www.youtube.com/embed/uvr1xiEaICU" frameborder="0" allowfullscreen></iframe>
+		-->
+	  </div>
+	</div>
+
+	
+<!--==== CLOCK ====-->
+	<div id="accTrailer" class="acc">
+	  <h3>CLOCK</h3>
+	  <div>
+		<p>http://www.sitepoint.com/10-cool-jquery-clock-tutorials-analog-digital/</p>
+		<p>http://demo.web3designs.com/analog-clock-using-css3-jquery.htm</p>
+		
+		<div id="clock">
+			<div id="hour" style="transform: rotate(334.5deg);"><img src="http://demo.web3designs.com/images/hourhand.png"></div>
+			<div id="minute" style="transform: rotate(54deg);"><img src="http://demo.web3designs.com/images/minhand.png"></div>
+			<div id="second" style="transform: rotate(108deg);"><img src="http://demo.web3designs.com/images/sechand.png"></div>
+		</div>
+	  </div>
+	</div>
+
+
+<!--==== SPEECH ====-->
+	<div id="accSpeech" class="acc">
+	  <h3>Speech</h3>
+	  <div>
+		<p>https://www.talater.com/annyang/ (what about html5?)</p>
+		<p>http://responsivevoice.org/ and html 5</p>
+	  </div>
+	</div>
+
+
+<!--==== CALENDAR ====-->
+	<div id="accCalendar" class="acc">
+	  <h3>Cal</h3>
+	  <div>
+		<p><a href="https://ucs.psu.edu/home/sar126@psu.edu/Calendar.rss?start=0days&end=2days">PSU today+2</a></p>
+		<p><a href="https://www.google.com/calendar/feeds/gfcmk50o4388g28a17njtlbl04%40group.calendar.google.com/private-ac16e7d84acce4ee6733fd0a0f03d3f0/basic">google kids</a></p>
+		<p><a href="https://www.google.com/calendar/feeds/scott.alex.reid%40gmail.com/private-aed5cda6bcd19ec56ac94281bbbc14ae/basic">google me</a></p>
+		<p><a href="https://www.google.com/calendar/feeds/t6johs6niup7hkq1mr4ko6ddnk%40group.calendar.google.com/private-f621c1eb876349b43a7b2a9e624482c3/basic">google sitter</a></p>
+		<iframe src="https://www.google.com/calendar/embed?showTitle=0&amp;showNav=0&amp;showPrint=0&amp;mode=AGENDA&amp;height=500&amp;wkst=1&amp;bgcolor=%23FFFFFF&amp;src=gfcmk50o4388g28a17njtlbl04%40group.calendar.google.com&amp;color=%235F6B02&amp;src=scott.alex.reid%40gmail.com&amp;color=%23B1440E&amp;src=t6johs6niup7hkq1mr4ko6ddnk%40group.calendar.google.com&amp;color=%236B3304&amp;src=usa%40holiday.calendar.google.com&amp;color=%23691426&amp;src=p%23weather%40group.v.calendar.google.com&amp;color=%2323164E&amp;ctz=America%2FNew_York" 
+			style=" border-width:0 " width="500" height="500" frameborder="0" scrolling="no"></iframe>
+		<p>http://bitfish.eu/projects/jquery-ics/</p>
+		
+		<p>http://www.sitepoint.com/10-jquery-calendar-clock-picker-plugin-collections/</p>
+		<p>http://savedelete.com/design/jquery-calendar-plugins/176818/</p>
+	  </div>
+	</div>
+
+	
+	
+<!--==== FLICKR ====-->
+	<div id="accFlickr" class="acc">
+	  <h3>Flickr</h3>
+	  <div>
+		<input type='button' value='go' onclick="//getimage();" />
+		<div id="images" style="background-color: green;"></div>
+  
+		<script>
+			(function() {
+				//var flickerAPI = "https://api.flickr.com/services/rest/?method=flickr.photos.getRecent"; 
+				var flickerAPI = "https://api.flickr.com/services/rest/?method=flickr.photos.getRecent&format=json&api_key=69f3ffd05ac2007785df2bb66ec474cf&per_page=10&page=1&auth_token=72157654622079751-60c5c1d717b875ae&api_sig=36b83e7d1b9ff9f2b0893bcaabbae5f2&extras=url_l"
+				//"http://api.flickr.com/services/feeds/photos_public.gne?jsoncallback=?";
+				//https://api.flickr.com/services/rest/?method=flickr.photos.getRecent
+				var src;
+//				$.getJSON(flickerAPI + "&format=json&jsoncallback=?", function(data){
+//					$.each(data.photos.photo, function(i,item){
+//						//src = "http://farm"+ item.farm +".static.flickr.com/"+ item.server +"/"+ item.id +"_"+ item.secret +"_m.jpg";
+//						src = $("<img/>").attr("src", item.url_l).appendTo("#images");
+//						$("<img/>").attr("src", src).appendTo("#images");
+//						if ( i == 3 ) return false;
+//					});
+//				});
+			  //$.getJSON( flickerAPI//, 
+					//{
+					//format: "json",
+					//api_key: "69f3ffd05ac2007785df2bb66ec474cf",
+					//per_page: "10",
+					//page: "1",
+					//auth_token: "72157654622079751-60c5c1d717b875ae",
+					//api_sig:"36b83e7d1b9ff9f2b0893bcaabbae5f2",
+					//extras: "url_l"
+					//}
+			  //)
+				//.always(function( data ) {
+				//  alert(data);
+				  //$.each( data.items, function( i, item ) {
+				  //  $( "<img>" ).attr( "src", item.media.m ).appendTo( "#images" );
+				  //  if ( i === 3 ) {
+				  //    return false;
+				  //  }
+				//  });
+				//});
+			})();
+		</script>
+
+	  </div>
+	</div>
+
+	
+ </div>
+  maybe tabs iso accordian?
+
+</body>
+</html>
