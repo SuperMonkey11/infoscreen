@@ -1,1 +1,286 @@
-Hoping...
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>jQuery UI Accordion - Default functionality</title>
+	
+<!--==== JQUERY ====-->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+	<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css">
+
+
+<!--==== ACCORDIANS ====-->
+	<script>
+		$(function() {
+			//$( "#accordion" ).accordion({
+			$( ".acc" ).accordion({
+				collapsible: true,
+				active: false
+			});
+		});
+
+	</script>
+	
+<!--==== TIMERS ====-->
+	<script type="text/javascript" src="./scripts/jquery.timer.js"></script>
+	<script>	
+		var MyTimer = new (function() {
+			var $countdown,
+				$form, // Form used to change the countdown time
+				incrementTime = 70,
+				currentTime = 3000,
+				updateTimer = function() {
+					$countdown.html(formatTime(currentTime));
+					if (currentTime == 0) {
+alert('stopping');
+						MyTimer.Timer.stop();
+						timerComplete();
+						MyTimer.resetCountdownText();
+						return;
+					}
+					currentTime -= incrementTime / 10;
+					if (currentTime < 0) currentTime = 0;
+				},
+				timerComplete = function() {
+					alert('Countdown timer complete!');
+					playalarm();
+				},
+				init = function() {
+					$countdown = $('#countdown');
+					MyTimer.Timer = $.timer(updateTimer, incrementTime, false);
+					$form = $('#FormTimer');
+					$form.bind('submit', function() {
+						MyTimer.resetCountdownText();
+						return false;
+					});
+				};
+			this.resetCountdown = function(oNewTimeSec) {
+				var newTime = oNewTimeSec * 100; //parseInt($form.find('input[type=text]').val()) * 100;
+				if (newTime > 0) {currentTime = newTime;}
+				this.Timer.stop().once();
+			};
+			this.resetCountdownText = function() {
+				this.resetCountdown (parseInt($form.find('input[type=text]').val()));
+			};
+			$(init);
+		});
+
+		var MyStopwatch = new (function() {
+			var $stopwatch, // Stopwatch element on the page
+				incrementTime = 70, // Timer speed in milliseconds
+				currentTime = 0, // Current time in hundredths of a second
+				lapcount = 1 //6/2018
+				updateTimer = function() {
+					$stopwatch.html(formatTime(currentTime));
+					currentTime += incrementTime / 10;
+				},
+				init = function() {
+					$stopwatch = $('#stopwatch');
+					MyStopwatch.Timer = $.timer(updateTimer, incrementTime, false);
+				};
+			this.stopStopwatch = function() {//--6/2018
+				this.Timer.pause();
+			}
+			this.startStopwatch = function() {//--6/2018
+				this.Timer.play();
+			}
+			this.lap = function() {//--6/2018
+				var strLapAdd = currentTime / 100.00; //new Date() - 
+				$('#StopwatchLap').append('LAP ' + lapcount + ': ' + strLapAdd.toString() + '<br/>');
+				lapcount++;
+			}
+			this.resetStopwatch = function() {
+				currentTime = 0;
+				this.Timer.stop().once();
+				alert(annyang.isListening());
+			};
+			$(init);
+		});
+
+		// Common functions
+		function pad(number, length) {
+			var str = '' + number;
+			while (str.length < length) {str = '0' + str;}
+			return str;
+		}
+		function formatTime(time) {
+			var min = parseInt(time / 6000),
+				sec = parseInt(time / 100) - (min * 60),
+				hundredths = pad(time - (sec * 100) - (min * 6000), 2);
+			return (min > 0 ? pad(min, 2) : "00") + ":" + pad(sec, 2) + ":" + hundredths;
+		}
+	</script>
+
+
+<!--==== VOICE RECOGNITION 6/2018 ====-->
+	<!--<script src="//cdnjs.cloudflare.com/ajax/libs/annyang/2.6.0/annyang.min.js"></script>-->
+	<script src="./scripts/annyang.min.js"></script>
+	<script>
+		if (annyang) {
+			var commands = {
+			'say hello (to my little) friend': greeting,
+			'stopwatch *tag': changeStopwatch
+			};
+			// Add our commands to annyang
+			annyang.addCommands(commands);
+
+			annyang.debug = true;
+
+			// Start listening. You can call this here, or attach this call to an event, button, etc.
+			annyang.start();
+			alert('Annyang!');
+		};
+
+		var changeStopwatch = function(tag) {
+			alert('here we go');
+			switch(tag) {
+				case 'start':
+					MyStopwatch.startStopwatch();
+					break;
+				case 'pause':
+					MyStopwatch.Timer.pause();
+					break;
+				case 'stop':
+					MyStopwatch.stopStopwatch();
+					break;
+				case 'reset':
+					MyStopwatch.resetStopwatch();
+					break;
+				case 'lap':
+					MyStopwatch.lap();
+					break;
+			}
+		}
+		
+		var greeting = function() {
+		$('#greeting').text('Hello!');
+		}
+	
+	</script>
+
+<!--==== PLAY ALARM MUSIC ====-->
+	<script>
+		function playalarm() {
+			var audioElement = document.createElement('audio');
+			audioElement.setAttribute('src', 'http://s1download-universal-soundbank.com/mp3/sounds/12733.mp3'); //'audio.mp3');
+			//http://s1download-universal-soundbank.com/mp3/sounds/16342.mp3
+			audioElement.setAttribute('autoplay', 'autoplay');
+			audioElement.load();
+
+			$.get();
+			audioElement.play();
+
+		};
+	</script>      
+
+
+
+<!--==== STYLES ====-->
+	<style>
+		.Xatbottom {
+			position:fixed;
+			bottom:0;
+		}
+		.bignums {
+			font-size: x-large;
+			color: red;
+		}
+		.acc {
+			float: left;
+		}
+	</style>
+	
+
+<!--==== CLOCK STYLES ====-->
+	<style>
+		#clock {
+			background-image: url("http://demo.web3designs.com/images/clockBg.png");
+			height: 200px;
+			position: relative;
+			width: 200px
+		}
+		#clock div {
+			position: absolute;
+			left:50%
+		}
+		#clock img[src*="second"] {
+			transition: transform 600000s linear 0s;
+		}
+		#clock:target img[src*="second"] {
+			transform: rotate(3600000deg);
+		}
+		#clock img[src*="minute"] {
+			transition: transform 360000s linear 0s;
+		}
+		#clock:target img[src*="minute"] {
+			transform: rotate(36000deg);
+		}
+		#clock img[src*="hour"] {
+			transition: transform 216000s linear 0s;
+		}
+		#clock:target img[src*="hour"] {
+			transform: rotate(360deg);
+		}
+	</style>
+</head>
+<body>
+ 
+<div class="atbottom">
+
+
+<!--==== TIMER ====-->
+	<div id="accTimer" class="acc">
+	  <h3>Timer</h3>
+	  <div>
+		<span id="countdown" class="bignums">01:00:00</span>
+		<form id="FormTimer">
+			<input type='button' value='Go/Pause' onclick='MyTimer.Timer.toggle();' />
+			<input type='button' value='Stop/Reset' onclick='MyTimer.resetCountdownText();' />
+			<input type='text' name='startTime' value='300' style='width:30px;' /><br />
+			
+			<input type='button' value=':30' onclick='MyTimer.resetCountdown(30);' />
+			<input type='button' value=':60' onclick='MyTimer.resetCountdown(60);' />
+			<input type='button' value=':90' onclick='MyTimer.resetCountdown(90);' />
+			<input type='button' value='2:00' onclick='MyTimer.resetCountdown(120);' />
+		</form>
+	  </div>
+	</div>
+
+<!--==== STOPWATCH ====-->
+	<div id="accStopwatch" class="acc">
+	  <h3>Stopwatch</h3>
+	  <div>
+		<p>
+			<span id="stopwatch" class="bignums">00:00:00</span>
+			<br/>
+			<input type='button' value='Start/Pause' onclick='MyStopwatch.startStopwatch();' />
+			<input type='button' value='Pause' onclick='MyStopwatch.Timer.pause();' />
+			<input type='button' value='Stop' onclick='MyStopwatch.stopStopwatch();' />
+			<input type='button' value='Reset' onclick='MyStopwatch.resetStopwatch();' />
+			<br/>
+			<input type='button' value='Lap' onclick='MyStopwatch.lap();' />
+			<input type='button' value='Start/Pause' onclick='MyStopwatch.Timer.toggle();' />
+		</p>
+		<p id='StopwatchLap'>
+
+		</p>
+	  </div>
+	</div>
+
+
+<!--==== SPEECH ====-->
+	<div id="accSpeech" class="acc">
+	  <h3>Speech</h3>
+	  <div>
+		<p>https://www.talater.com/annyang/ (what about html5?)</p>
+		<p>http://responsivevoice.org/ and html 5</p>
+	  </div>
+	</div>
+
+
+	
+ </div>
+
+</body>
+</html>
